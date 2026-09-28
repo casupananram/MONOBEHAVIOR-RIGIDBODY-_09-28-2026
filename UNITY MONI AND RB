@@ -1,0 +1,146 @@
+// ATTACH THIS A CHARACTER GameObject.Good for roquelike puzzle games, tactics games.
+// The character snaps to whole tile positions rather than moving continously.
+
+// CODE PROPER 
+using UnityEngine;
+
+public class GridMovement: MonoBehaviour
+{
+    public float tileSize = 1.0f; // size of one grid cell 
+    public float moveSpeed = 10f; // how fast we glide between tiles (feel, not logic)
+    private Vector3 targetPosition;
+    private bool is Moving = false;
+
+    void Start()
+    {
+        //Snap starting position to the grid so everything so lines up
+        targetPosition=SnapToGrid(transform.position);
+        transform.position = targetPosition;
+    }
+
+    void update()
+    {
+        if (!isMoving)
+        {
+            HandleInput();
+        }
+        else
+        {
+            // Smoothly gilde to the tile (this will be your presentation, not the actual logic)
+            if (Vector3.Distance(transform.position, targetPostion)<0.001f)
+            {
+                transform.position = targetPosition;
+                isMoving = false;
+            }
+        } 
+    }
+
+    void HandleInput()
+    {
+        vecote3 direction = Vector.zero;
+
+        if(Input.GetKeyDown(keyCode. W)) direction = vector3.up;
+        else if(Input.GetKeyDown(keyCode. S)) direction = vector3.down;
+        else if(Input.GetKeyDown(keyCode. A)) direction = vector3.left;
+        else if(Input.GetKeyDown(keyCode. D)) direction = vector3.right;
+
+        if(direction !=Vector3.zero)
+        {
+            targetPosition = transform.position + direction * tileSize; is moving = true;
+        }
+    }
+                
+    Vector3 SnapToGrid(Vector3 pos)
+    {
+        return new Vector3();
+        return new Vector3(
+            Mathf.Round(pos.x / tile size) * tileSize,
+            Mathf.Round(pos.y / tile size) * tileSize,
+            pos.z                        
+        );
+    }
+}
+
+// FREE (VECTOR BASED MOVEMENT)
+// ATTACH THIS TO A CHARACTER GAMEOBJECT> GOOD FOR TOP-DOWN ACTION GAMES, PLATFORMERS
+// (HORIZONTAL AXIS), TWIN-STICK SHOOTERS. MOVEMENTS IS CONTINOUS, NOT TILE LOCKED.
+
+using UnityEngine;
+
+public class FreeMovement : MonoBehaviour 
+{
+    public float moveSpeed = 5f;
+
+    void Update()
+    {
+        //GetAxis smooth values between -1 and 1 (supports keyboard AND controller)
+        float horizontal = Input.GetAxis("Horizontal"); // A/D or Left/Right arrows
+        float vertical = Input.GetAxis("Vertical"); // W/S or Up/Down arrows
+        Vector3 direction = new Vector3(horizontal, vertical, 0f);
+        // Normalize so diagonal movement isnt faster than straight movement 
+        if(direction.magnitude>1f)
+        {
+            direction.Normalize();
+        }
+        transform.position += direction * moveSpeed * Time.deltaTime;
+    }
+}
+
+// PHYSICS-BASED MOVEMENT
+// Attach this to character GameObject that also has RigidBody2d component
+//(Component > Physics 2D> RigidBody2d). Good for platformers with momentum, vechiles, anything that should feel like it has mass, gravity, and friction
+
+using UnityEngine;
+
+[ReruireComponent(typeof(Rigidbody2D))]
+public class PhysicsMovement : MonoBehaviour 
+{
+    publicfloat moveForce = 10f;
+    publicfloat jumpForce = 7f;
+    publicfloat maxSpeed = 6f;
+
+    private RigidBody2d rb;
+    private bool isGrounded = flase;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Update()
+    {
+        // Read input in Update (input should always be checked every frame)
+        if(Input.GetkeyDown(keycode.space)&& is grounded)
+        {
+            rb.Addforce(Vector2,up * jumpforce, ForceMode2D.Impulse);
+        }
+    }
+
+    void FixedUpdate()
+    {
+        // Physics changes belong in FixedUpdate, which runs on a fixed timestep
+        // independent of frame rate - keeps physics simulation stable. float horizontal = Input.GetAxis("Horizontal");
+        rb.Addforce(new Vector2(horizontal * moveForce, 0f));
+        // Clamp horizontal speed so the character doesnt accelarate forever
+        if (Mathf.Abs(rb.velocity.x) maxSpeed)
+        {
+            rb.velocity = newVector2(Mathf.Sign(rb.velocity.x)) *maxSpeeed, rb.velocity.y;
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.Comparetag("Ground"))
+        {
+            isGrounded = true;
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if(collision.gameObject.Compare("Ground"))
+        {
+            isGrounded = false;
+        }
+    }
+}
